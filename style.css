@@ -41,8 +41,8 @@ body::before{
         0deg,
         transparent,
         transparent 2px,
-        rgba(0,0,0,0.06) 2px,
-        rgba(0,0,0,0.06) 4px
+        rgba(0,0,0,0.09) 2px,
+        rgba(0,0,0,0.09) 4px
     );
 }
 nav{
@@ -89,6 +89,7 @@ nav{
     font-size: 0.82em;
     letter-spacing: 0.18em;
     color: var(--text-dim);
+    text-transform: uppercase;
     text-decoration: none;
     transition: color 0.2s;
     position: relative;
@@ -140,4 +141,26 @@ nav{
 }
 .nav-cta span{
     position: relative; 
+}
+#hero{
+    display: flex;
+    overflow: hidden;
+    align-items: center;
+    position: relative;
+    padding-top: 80px;
+    min-height: 100vh;
+}
+.hero-grid{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        rgba(255,26,26,0.035) 1px, 
+        transparent 1px
+    ),
+    linear-gradient(
+        90deg, 
+        rgba(255,26,26,0.035) 1px, 
+        transparent 1px
+        );
+    background-size: 56px 56px;
 }
