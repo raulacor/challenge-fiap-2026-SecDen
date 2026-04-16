@@ -65,7 +65,9 @@ nav{
     text-decoration: none;
     position: relative;
 }
-.nav-logo span { color: var(--red); }
+.nav-logo span { 
+    color: var(--red); 
+}
 .nav-logo::after{
     content: '';
     position: absolute;
@@ -90,5 +92,24 @@ nav{
     transition: color 0.2s;
     position: relative;
 }
-.nav-links a:hover { color: var(--text); }
-.nav-links::after
+.nav-links a:hover { 
+    color: var(--text); 
+}
+.nav-links a::after{
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--red);
+    box-shadow: 0 0 6px var(--red);
+    transition: width 0.3s ease;
+        
+}
+.nav-links a:hover{
+    color: var(--text);
+}
+.nav-links a:hover::after { 
+    width: 100%; 
+}
