@@ -59,6 +59,7 @@ nav{
     transition: background 0.3s;
 }
 .nav-logo{
+    color: var(--text);
     font-family: var(--font-display);
     font-size: 2rem;
     letter-spacing: 0.08rem;
@@ -92,9 +93,6 @@ nav{
     transition: color 0.2s;
     position: relative;
 }
-.nav-links a:hover { 
-    color: var(--text); 
-}
 .nav-links a::after{
     content: '';
     position: absolute;
@@ -104,12 +102,42 @@ nav{
     height: 1px;
     background: var(--red);
     box-shadow: 0 0 6px var(--red);
-    transition: width 0.3s ease;
-        
+    transition: width 0.3s ease;      
 }
 .nav-links a:hover{
     color: var(--text);
 }
 .nav-links a:hover::after { 
     width: 100%; 
+}
+.nav-cta{
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.22rem;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 10px 26px;
+    text-transform: uppercase;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s;
+}
+.nav-cta::before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--red);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+.nav-cta:hover{ 
+    color: #000; 
+}
+.nav-cta:hover::before{
+    transform: scaleX(1); 
+}
+.nav-cta span{
+    position: relative; 
 }
