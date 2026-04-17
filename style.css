@@ -30,6 +30,7 @@ body{
     line-height: 1.6;
     overflow-x: hidden;
 
+
 }
 body::before{
     content: '';
@@ -43,6 +44,7 @@ body::before{
         transparent 2px,
         rgba(0,0,0,0.09) 2px,
         rgba(0,0,0,0.09) 4px
+
     );
 }
 nav{
@@ -57,6 +59,7 @@ nav{
     backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--border);
     transition: background 0.3s;
+
 }
 .nav-logo{
     color: var(--text);
@@ -65,9 +68,11 @@ nav{
     letter-spacing: 0.08rem;
     text-decoration: none;
     position: relative;
+
 }
 .nav-logo span { 
     color: var(--red); 
+
 }
 .nav-logo::after{
     content: '';
@@ -76,7 +81,8 @@ nav{
     width: 100%;
     height: 1px;
     background-color: var(--red);
-    box-shadow: 0 0 10px var(--red);;
+    box-shadow: 0 0 10px var(--red);
+
 }
 .nav-links{
     display: flex;
@@ -93,6 +99,7 @@ nav{
     text-decoration: none;
     transition: color 0.2s;
     position: relative;
+
 }
 .nav-links a::after{
     content: '';
@@ -103,13 +110,16 @@ nav{
     height: 1px;
     background: var(--red);
     box-shadow: 0 0 6px var(--red);
-    transition: width 0.3s ease;      
+    transition: width 0.3s ease;     
+
 }
 .nav-links a:hover{
     color: var(--text);
+
 }
 .nav-links a:hover::after { 
-    width: 100%; 
+    width: 100%;
+
 }
 .nav-cta{
     font-family: var(--font-body);
@@ -124,6 +134,7 @@ nav{
     position: relative;
     overflow: hidden;
     transition: color 0.3s;
+
 }
 .nav-cta::before{
     content: '';
@@ -132,15 +143,19 @@ nav{
     background: var(--red);
     transform: scaleX(0);
     transition: transform 0.3s ease;
+
 }
 .nav-cta:hover{ 
     color: #000; 
+
 }
 .nav-cta:hover::before{
     transform: scaleX(1); 
+
 }
 .nav-cta span{
     position: relative; 
+
 }
 #hero{
     display: flex;
@@ -149,6 +164,7 @@ nav{
     position: relative;
     padding-top: 80px;
     min-height: 100vh;
+
 }
 .hero-grid{
     position: absolute;
@@ -163,11 +179,13 @@ nav{
         transparent 1px
         );
     background-size: 56px 56px;
+
 }
 .hero-vignette{
     position: absolute;
     inset: 0;
     background: radial-gradient(ellipse at 30% 50%, transparent 20%, rgba(4,4,4,0.85) 80%);
+
 }
 .hero-content{
     position: relative;
@@ -175,6 +193,7 @@ nav{
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 60px;
+
 }
 .hero-eyebrow{
     font-family: var(--font-mono);
@@ -185,12 +204,74 @@ nav{
     display: flex;
     align-items: center;
     gap: 10px; 
+
 }
 .hero-eyebrow::before{
     content: '';
     width: 36px;
     height: 1px;
     background: var(--red);
-    box-shadow: 0 0 8px var(--red-glow);
+    box-shadow: 0 0 8px var(--red);
+
+}
+.hero-title{
+    font-family: var(--font-display);
+    font-size: clamp(4.5rem, 11vw, 9.5rem);
+    line-height: 0.88;
+    letter-spacing: 0.015em;
+    margin-bottom: 36px
+
+}
+.hero-title .l1{ 
+    display:block; 
+    color: var(--text);
+
+}
+.hero-title .l2{
+    display:block;
+    color: var(--red);
+    text-shadow: 0 0 50px var(--red-glow), 0 0 100px var(--red-subtle);
+    position: relative;
+
+}
+.hero-title .l3{
+    display: block;
+    -webkit-text-stroke: 1px rgba(232, 232, 232, 0.4);
+    color: transparent;
+
+}
+.hero-sub{
+    font-size: 1.15rem;
+    font-weight: 300;
+    color: var(--text-dim);
+    max-width: 500px;
+    margin-bottom: 52px;
+    line-height: 1.75;
+    letter-spacing: 0.02em;
+    
+}
+.hero-actions{
+    display: flex;
+    gap: 24px;
+    align-items: center;
+
+}
+.btn-primary{
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #000;
+    background: var(--red);
+    border: none;
+    padding: 16px 42px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(255,26,26,0.45), 0 0 70px rgba(255,26,26,0.15);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: box-shadow 0.3s, transform 0.2s;
 
 }
