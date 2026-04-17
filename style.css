@@ -300,4 +300,31 @@ nav{
     50%, 100%{
         left: 200%;
     }
+
+}
+.btn-ghost{
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.88rem;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    background: none;
+    border: none;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+}
+.btn-ghost:hover{
+    color: var(--text);
+
+}
+.btn-ghost .arr{
+    transition: transform 0.2s;
+
+}
+.btn-ghost:hover .arr{
+    transform: translateX(5px);
+
 }
