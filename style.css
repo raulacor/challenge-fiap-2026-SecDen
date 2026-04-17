@@ -153,7 +153,7 @@ nav{
 .hero-grid{
     position: absolute;
     inset: 0;
-    background: linear-gradient(
+    background-image: linear-gradient(
         rgba(255,26,26,0.035) 1px, 
         transparent 1px
     ),
@@ -163,4 +163,34 @@ nav{
         transparent 1px
         );
     background-size: 56px 56px;
+}
+.hero-vignette{
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, transparent 20%, rgba(4,4,4,0.85) 80%);
+}
+.hero-content{
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 60px;
+}
+.hero-eyebrow{
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--red);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+}
+.hero-eyebrow::before{
+    content: '';
+    width: 36px;
+    height: 1px;
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red-glow);
+
 }
