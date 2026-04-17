@@ -234,6 +234,57 @@ nav{
     position: relative;
 
 }
+.glitch{ 
+    position: relative; 
+    
+}
+.glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top:0; left:0;
+    width:100%; height:100%;
+
+}
+.glitch::before{
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--red);
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+    animation: glitch-a 5s infinite;
+
+}
+.glitch::after{
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: #00EEFF;
+    clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+    animation: glitch-b 5s infinite;
+
+}
+@keyframes glitch-a{
+    0%,94%,100% { transform:translate(0); opacity:0; }
+    95% { transform:translate(-4px,-1px); opacity:0.85; }
+    96% { transform:translate(4px,1px); opacity:0.85; }
+    97% { transform:translate(-2px,0); opacity:0.85; }
+    98% { transform:translate(2px,-2px); opacity:0.85; }
+    99% { transform:translate(0); opacity:0; }
+
+}
+@keyframes glitch-b{
+    0%,91%,100% { transform:translate(0); opacity:0; }
+    92% { transform:translate(4px,2px); opacity:0.6; }
+    93% { transform:translate(-4px,-2px); opacity:0.6; }
+    94% { transform:translate(2px,1px); opacity:0.6; }
+
+}
 .hero-title .l3{
     display: block;
     -webkit-text-stroke: 1px rgba(232, 232, 232, 0.4);
