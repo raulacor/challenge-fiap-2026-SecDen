@@ -516,3 +516,16 @@ nav{
     align-items: center;
     
 }
+.mission-text p{
+    font-size: 1.08rem;
+    font-weight: 300;
+    color: var(--text-dim);
+    line-height: 1.85;
+    margin-bottom: 22px;
+
+}
+.mission-text p strong{
+    color: var(--text);
+    font-weight: 700;
+
+}
