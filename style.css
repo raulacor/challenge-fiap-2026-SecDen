@@ -442,7 +442,7 @@ nav{
 .bolt-3 { animation: lbolt-3 8s ease-in-out infinite; }
 .bolt-4 { animation: lbolt-4 11s ease-in-out infinite; }
 .ticker{
-    background: var(--red);
+    background: var(--red-dim);
     padding: 11px 0;
     overflow: hidden;
     white-space: nowrap;
