@@ -712,7 +712,13 @@ nav{
     color: rgba(255,26,26,0.13);
     line-height: 1;
     margin-bottom: 18px;
+    transition: color 0.3s, text-shadow 0.3s;
 
+}
+.step:hover .step-num{
+    color: var(--red);
+    text-shadow: 0 0 30px rgba(255,26,26,0.6);
+    transition: color 0.3s, text-shadow 0.3s;
 }
 .step-icon{
     width: 46px;
