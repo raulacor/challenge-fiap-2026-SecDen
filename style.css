@@ -647,4 +647,17 @@ nav{
 .tl:nth-child(11) { animation-delay: 4.6s; }
 @keyframes fi { 
     to { opacity: 1; } 
+
+}
+#how{
+    padding: 120px 60px;
+    background: var(--bg-2);
+    position: relative;
+    overflow: hidden;
+
+}
+.how-inner{
+    max-width: 1200px;
+    margin: 0 auto;
+    
 }
