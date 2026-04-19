@@ -659,5 +659,50 @@ nav{
 .how-inner{
     max-width: 1200px;
     margin: 0 auto;
+
+}
+.steps{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 2px;
+    position: relative;
+
+}
+.steps::before{
+    content: '';
+    z-index: 1;
+    position: absolute;
+    top: 52px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 1px;
+    opacity: 0.25;
+
+}
+.step{
+    background: var(--surface);
+    border: 1px solid  rgba(255,26,26,0.09);
+    padding: 40px 30px;
+    position: relative;
+    cursor: default;
+    transition: border-color 0.3s, transform 0.3s;
+
+}
+.step:hover{
+    border-color: var(--red);
+    transform: translateY(-5px);
+
+}
+.step-xp{
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    background: var(--red-subtle);
+    color: var(--red);
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    letter-spacing: 0.1em;
     
 }
