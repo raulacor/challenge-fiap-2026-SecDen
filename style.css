@@ -755,9 +755,72 @@ nav{
     line-height: 1.72;
 
 }
+/* cta */
+#cta{
+    padding: 130px 60px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
 
+}
+#cta::before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,26,26,0.14) 0%, transparent 65%);
 
+}
+#cta::after{
+    content: '';
+    position: absolute;
+    height: 2px;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(90deg, transparent 0%, var(--red) 30%, #FF6666 50%, var(--red) 70%, transparent 100%);
+    box-shadow: 0 0 20px rgba(255,26,26,0.8), 0 0 40px rgba(255, 26, 26, 0.4);
 
+}
+#cta .section-label{
+    justify-content: center;
+}
+.cta-inner{
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    margin: 0 auto;
+
+}
+.cta-title{
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 8vw, 6.5rem);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    margin-bottom: 28px;
+
+}
+.cta-sub{
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    margin-bottom: 50px;
+    font-weight: 300;
+    line-height: 1.75;
+
+}
+.cta-actions{
+    display: flex;
+    gap: 22px;
+    justify-content: center;
+    align-items: center;
+
+}
+.cta-note{
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--text-dim);
+    letter-spacing: 0.16em;
+    margin-top: 28px;
+}
 /* Footer */
 footer{
     background: var(--surface);
@@ -765,7 +828,6 @@ footer{
     padding: 36px 60px;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    justify-content: space-between;
     align-items: center;
 
 }
@@ -790,10 +852,10 @@ footer{
 
 }
 .footer-copy {
-            font-family: var(--font-mono);
-            font-size: 0.66rem;
-            color: var(--text-dim);
-            letter-spacing: 0.1em;
-            justify-self: end;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    justify-self: end;
 
 }
