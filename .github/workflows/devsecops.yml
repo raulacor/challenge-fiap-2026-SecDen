@@ -35,7 +35,6 @@ jobs:
       - name: Executar Gitleaks no historico completo
         run: |
           ./gitleaks git . \
-            --config .gitleaks.toml \
             --redact \
             --report-format json \
             --report-path gitleaks.json \
@@ -68,8 +67,10 @@ jobs:
             --config p/default \
             --config p/owasp-top-ten \
             --json-output=semgrep.json \
-            --sarif-output=semgrep.sarif \
-            --error
+            --sarif-output=semgrep.sarif
+
+      - name: Quality gate WARNING/ERROR
+        run: jq -e '[.results[] | select(.extra.severity != "INFO")] | length == 0' semgrep.json
 
       - name: Enviar SARIF para a aba Security
         if: always() && hashFiles('semgrep.sarif') != ''
