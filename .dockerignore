@@ -1,0 +1,11 @@
+node_modules
+hub/node_modules
+dist
+hub/dist
+.git
+.github
+.agents
+docs
+tests
+*.md
+.env*

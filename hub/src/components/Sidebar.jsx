@@ -16,7 +16,7 @@ export default function Sidebar({ currentPage, setPage, user }) {
     <aside className="hub-sidebar">
       {/* Logo */}
       <div className="sidebar-logo">
-        <a href="../index.html">Sec<span>Den</span></a>
+        <a href="../../index.html">Sec<span>Den</span></a>
       </div>
 
       {/* Nav */}

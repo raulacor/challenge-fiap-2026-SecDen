@@ -1,0 +1,483 @@
+name: DevSecOps
+
+on:
+  push:
+    branches: [main, "teste/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devsecops-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TRIVY_IMAGE: aquasec/trivy:0.76.1
+  GITLEAKS_VERSION: 8.30.1
+  SEMGREP_VERSION: 1.183.0
+
+jobs:
+  secrets-scan:
+    name: 1. Secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Instalar Gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -xzf gitleaks.tgz gitleaks
+          rm gitleaks.tgz
+
+      - name: Executar Gitleaks no historico completo
+        run: |
+          ./gitleaks git . \
+            --config .gitleaks.toml \
+            --redact \
+            --report-format json \
+            --report-path gitleaks.json \
+            --exit-code 1
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-01-gitleaks
+          path: gitleaks.json
+          if-no-files-found: warn
+
+  sast:
+    name: 2. SAST (Semgrep)
+    needs: secrets-scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Instalar Semgrep
+        run: pipx install "semgrep==${SEMGREP_VERSION}"
+
+      - name: Executar Semgrep
+        run: |
+          semgrep scan \
+            --config p/default \
+            --config p/owasp-top-ten \
+            --json-output=semgrep.json \
+            --sarif-output=semgrep.sarif \
+            --error
+
+      - name: Enviar SARIF para a aba Security
+        if: always() && hashFiles('semgrep.sarif') != ''
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-02-semgrep
+          path: |
+            semgrep.json
+            semgrep.sarif
+          if-no-files-found: warn
+
+  build:
+    name: 3. Build, dependencias e artefato
+    needs: sast
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            hub/package-lock.json
+
+      - name: Instalar dependencias
+        run: |
+          npm ci
+          npm ci --prefix hub
+
+      - name: Arvore de dependencias e auditoria
+        run: |
+          {
+            echo "== landing =="
+            npm ls --all
+            echo
+            echo "== hub =="
+            npm ls --all --prefix hub
+          } > arvore-dependencias.txt
+          npm audit --json > npm-audit.json || true
+          npm audit --json --prefix hub > npm-audit-hub.json || true
+
+      - name: Testes
+        run: npm test
+
+      - name: Build
+        run: |
+          npm run build
+          npm run build --prefix hub
+
+      - name: Empacotar artefato
+        run: tar -czf "secden-${GITHUB_SHA}.tar.gz" dist hub/dist
+
+      - name: Publicar artefato
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: artefato-aplicacao-${{ github.sha }}
+          path: secden-${{ github.sha }}.tar.gz
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-03-build
+          path: |
+            arvore-dependencias.txt
+            npm-audit.json
+            npm-audit-hub.json
+          if-no-files-found: warn
+
+  sca:
+    name: 4. SCA (Trivy fs)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Relatorio completo
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src "$TRIVY_IMAGE" fs \
+            --scanners vuln,misconfig,secret \
+            --skip-dirs node_modules,hub/node_modules,dist,hub/dist \
+            --format table --output trivy-fs.txt .
+
+      - name: Quality gate HIGH/CRITICAL
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src "$TRIVY_IMAGE" fs \
+            --scanners vuln,misconfig,secret \
+            --skip-dirs node_modules,hub/node_modules,dist,hub/dist \
+            --severity HIGH,CRITICAL \
+            --format json --output trivy-fs.json \
+            --exit-code 1 .
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-04-trivy-sca
+          path: |
+            trivy-fs.txt
+            trivy-fs.json
+          if-no-files-found: warn
+
+  docker-build:
+    name: 5. Docker build + GHCR
+    needs: sca
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      image: ${{ steps.vars.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Definir nome da imagem
+        id: vars
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build e push
+        id: push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.vars.outputs.image }}
+
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Assinar imagem (Cosign keyless)
+        env:
+          IMAGE: ${{ steps.vars.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: cosign sign --yes "${IMAGE%:*}@${DIGEST}"
+
+      - name: Gerar relatorio
+        if: always()
+        env:
+          IMAGE: ${{ steps.vars.outputs.image }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          {
+            echo "# Docker build"
+            echo
+            echo "- Imagem: \`${IMAGE}\`"
+            echo "- Digest: \`${DIGEST}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Assinatura: Cosign keyless"
+            echo
+            echo "## Manifesto"
+            echo
+            echo '```'
+            docker buildx imagetools inspect "${IMAGE}" || echo "imagem nao publicada"
+            echo '```'
+          } > docker-build.md
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-05-docker-build
+          path: docker-build.md
+
+  image-scan:
+    name: 6. Scan da imagem (Trivy)
+    needs: docker-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    env:
+      IMAGE: ${{ needs.docker-build.outputs.image }}
+      TRIVY_USERNAME: ${{ github.actor }}
+      TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Relatorio completo e SBOM
+        run: |
+          docker run --rm -e TRIVY_USERNAME -e TRIVY_PASSWORD -v "$PWD:/out" "$TRIVY_IMAGE" image \
+            --format table --output /out/trivy-image.txt "$IMAGE"
+          docker run --rm -e TRIVY_USERNAME -e TRIVY_PASSWORD -v "$PWD:/out" "$TRIVY_IMAGE" image \
+            --format cyclonedx --output /out/sbom.cdx.json "$IMAGE"
+
+      - name: Quality gate HIGH/CRITICAL com correcao
+        run: |
+          docker run --rm -e TRIVY_USERNAME -e TRIVY_PASSWORD -v "$PWD:/out" "$TRIVY_IMAGE" image \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --format json --output /out/trivy-image.json \
+            --exit-code 1 "$IMAGE"
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-06-trivy-image
+          path: |
+            trivy-image.txt
+            trivy-image.json
+            sbom.cdx.json
+          if-no-files-found: warn
+
+  dast-staging:
+    name: 7. Homologacao + ZAP
+    needs: [docker-build, image-scan]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: homologacao
+      url: http://localhost:8080
+    env:
+      IMAGE: ${{ needs.docker-build.outputs.image }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Subir imagem em homologacao
+        run: |
+          docker run -d --name secden-hml -p 8080:8080 "$IMAGE"
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8080 > /dev/null && exit 0
+            sleep 2
+          done
+          docker logs secden-hml
+          exit 1
+
+      - name: Permitir escrita dos relatorios do ZAP
+        run: chmod a+w "$GITHUB_WORKSPACE"
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
+        with:
+          target: http://localhost:8080
+          fail_action: false
+          allow_issue_writing: false
+          artifact_name: zap-baseline
+
+      - name: Guardar relatorios do baseline
+        if: always()
+        run: |
+          mkdir -p zap
+          for f in report_html.html report_json.json report_md.md; do
+            [ -f "$f" ] && mv "$f" "zap/$f"
+          done
+          true
+
+      - name: ZAP Full Scan
+        uses: zaproxy/action-full-scan@3c58388149901b9a03b7718852c5ba889646c27c # v0.13.0
+        with:
+          target: http://localhost:8080
+          fail_action: false
+          allow_issue_writing: false
+          artifact_name: zap-full
+
+      - name: Organizar relatorios
+        if: always()
+        run: |
+          mkdir -p zap/full
+          for f in report_html.html report_json.json report_md.md; do
+            [ -f "$f" ] && mv "$f" "zap/full/$f"
+          done
+          docker rm -f secden-hml || true
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-07-homologacao-zap
+          path: zap/
+          if-no-files-found: warn
+
+  deploy-prod:
+    name: 8. Aprovacao + producao
+    needs: [docker-build, dast-staging]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    environment:
+      name: producao
+      url: ${{ vars.PROD_URL }}
+    env:
+      IMAGE: ${{ needs.docker-build.outputs.image }}
+      DIGEST: ${{ needs.docker-build.outputs.digest }}
+      PROD_URL: ${{ vars.PROD_URL }}
+    steps:
+      - name: Deploy no Render pela imagem do commit
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          IMG=$(jq -rn --arg v "$IMAGE" '$v|@uri')
+          curl -fsS -X POST "${DEPLOY_HOOK}&imgURL=${IMG}" -o /dev/null
+
+      - name: Verificar producao
+        run: |
+          sleep 30
+          for i in $(seq 1 30); do
+            curl -fsS "$PROD_URL" > /dev/null && exit 0
+            sleep 10
+          done
+          exit 1
+
+      - name: Gerar relatorio
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APPROVER=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/approvals" \
+            --jq '.[0] | "\(.user.login) em \(.environments[0].name): \(.comment // "sem comentario")"' 2>/dev/null || echo "nao encontrado")
+          {
+            echo "# Deploy em producao"
+            echo
+            echo "- Imagem: \`${IMAGE}\`"
+            echo "- Digest: \`${DIGEST}\`"
+            echo "- Aprovado por: ${APPROVER}"
+            echo "- Disparado por: ${GITHUB_ACTOR}"
+            echo "- Data (UTC): $(date -u +'%Y-%m-%d %H:%M:%S')"
+            echo "- URL: ${PROD_URL}"
+            echo "- Execucao: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          } > deploy-producao.md
+
+      - name: Publicar relatorio
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: relatorio-08-producao
+          path: deploy-producao.md
+
+  pipeline-summary:
+    name: Resumo da Esteira
+    needs: [secrets-scan, sast, build, sca, docker-build, image-scan, dast-staging, deploy-prod]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: relatorio-*
+          path: r
+
+      - name: Montar resumo
+        env:
+          R1: ${{ needs.secrets-scan.result }}
+          R2: ${{ needs.sast.result }}
+          R3: ${{ needs.build.result }}
+          R4: ${{ needs.sca.result }}
+          R5: ${{ needs.docker-build.result }}
+          R6: ${{ needs.image-scan.result }}
+          R7: ${{ needs.dast-staging.result }}
+          R8: ${{ needs.deploy-prod.result }}
+        run: |
+          count() { [ -f "$1" ] && jq -r "$2" "$1" 2>/dev/null || echo "-"; }
+
+          A1="$(count r/relatorio-01-gitleaks/gitleaks.json 'length') segredos"
+          A2="$(count r/relatorio-02-semgrep/semgrep.json '.results | length') achados"
+          A3a=$(count r/relatorio-03-build/npm-audit.json '.metadata.vulnerabilities.total')
+          A3b=$(count r/relatorio-03-build/npm-audit-hub.json '.metadata.vulnerabilities.total')
+          A3="${A3a} + ${A3b} vulns (npm audit)"
+          TQ='[.Results[]? | (.Vulnerabilities // [])[], (.Misconfigurations // [])[], (.Secrets // [])[]] | length'
+          A4="$(count r/relatorio-04-trivy-sca/trivy-fs.json "$TQ") HIGH/CRITICAL"
+          A6="$(count r/relatorio-06-trivy-image/trivy-image.json "$TQ") HIGH/CRITICAL"
+          ZQ='[.site[]?.alerts[]? | select(.riskcode == "3")] | length'
+          ZM='[.site[]?.alerts[]? | select(.riskcode == "2")] | length'
+          ZF=r/relatorio-07-homologacao-zap/report_json.json
+          A7="$(count "$ZF" "$ZQ") alertas High, $(count "$ZF" "$ZM") Medium"
+
+          {
+            echo "## Resumo da Esteira"
+            echo
+            echo "| # | Etapa | Resultado | Achados |"
+            echo "|---|-------|-----------|---------|"
+            echo "| 1 | Secrets (Gitleaks) | $R1 | $A1 |"
+            echo "| 2 | SAST (Semgrep) | $R2 | $A2 |"
+            echo "| 3 | Build + dependencias | $R3 | $A3 |"
+            echo "| 4 | SCA (Trivy fs) | $R4 | $A4 |"
+            echo "| 5 | Docker build + GHCR | $R5 | - |"
+            echo "| 6 | Scan da imagem (Trivy) | $R6 | $A6 |"
+            echo "| 7 | Homologacao + ZAP | $R7 | $A7 |"
+            echo "| 8 | Aprovacao + Producao | $R8 | - |"
+          } > resumo-esteira.md
+          cat resumo-esteira.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publicar resumo
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: resumo-da-esteira
+          path: resumo-esteira.md
