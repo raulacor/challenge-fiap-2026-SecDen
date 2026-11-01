@@ -6,11 +6,11 @@ Todas as actions estao fixadas pelo SHA do commit. As ferramentas tem versao fix
 
 ## 1. Secrets (`secrets-scan`)
 
-Gitleaks no historico completo (`fetch-depth: 0`) com `--redact` e `--exit-code 1`. O `.gitleaks.toml` usa as regras padrao e ignora `node_modules/` e `dist/`, que eram versionados em commits antigos e sao codigo de terceiros ou gerado.
+Gitleaks no historico completo (`fetch-depth: 0`) com `--redact` e `--exit-code 1`, regras padrao, sem allowlist.
 
 ## 2. SAST (`sast`)
 
-Semgrep com `p/default` e `p/owasp-top-ten`, `--error` como gate. Gera JSON e SARIF; o SARIF vai para a aba Security. O `.semgrepignore` ignora dependencias, build e docs.
+Semgrep com `p/default` e `p/owasp-top-ten`. O gate falha com qualquer achado WARNING ou ERROR. Achados INFO ficam no relatorio sem bloquear. Gera JSON e SARIF; o SARIF vai para a aba Security. O `.semgrepignore` ignora dependencias, build e docs.
 
 ## 3. Build (`build`)
 

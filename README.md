@@ -15,7 +15,9 @@ Plataforma gamificada de treino em ciberseguranca. Tem uma landing page e o Hub,
 
 ## Producao
 
-URL: PREENCHER
+URL: https://challenge-fiap-2026-secden-sha256.onrender.com
+
+![Producao](docs/evidencias/producao.png)
 
 ## Como executar
 
@@ -70,9 +72,11 @@ Detalhes em [docs/pipeline.md](docs/pipeline.md). Achados em [docs/observacoes.m
 
 O revisor consulta os relatorios das etapas 1 a 7 antes de aprovar.
 
+![Aprovacao](docs/evidencias/aprovacao-producao.png)
+
 | Execucao  | Aprovado por | Data      | Base da decisao                                                       |
 | --------- | ------------ | --------- | --------------------------------------------------------------------- |
-| PREENCHER | PREENCHER    | PREENCHER | 0 segredos, 0 HIGH/CRITICAL nas etapas 4 e 6, sem alertas High no ZAP |
+| [#3](https://github.com/raulacor/challenge-fiap-2026-SecDen/actions/runs/41326050353) | raulacor | 01/11/2026 | 0 segredos, 0 achados Semgrep, 0 HIGH/CRITICAL nas etapas 4 e 6, 0 alertas High no ZAP |
 
 ### Etapa 4 x Etapa 6
 
