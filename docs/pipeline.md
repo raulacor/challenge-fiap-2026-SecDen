@@ -6,7 +6,7 @@ Todas as actions estao fixadas pelo SHA do commit. As ferramentas tem versao fix
 
 ## 1. Secrets (`secrets-scan`)
 
-Gitleaks no historico completo (`fetch-depth: 0`) com `--redact` e `--exit-code 1`, regras padrao, sem allowlist.
+Gitleaks no historico completo (`fetch-depth: 0`) com `--redact` e `--exit-code 1`, regras padrao. O `.gitleaksignore` tem uma unica entrada: a chave ficticia do teste de quality gate.
 
 ## 2. SAST (`sast`)
 

@@ -16,7 +16,11 @@ Classificacao: real, falso positivo ou risco aceito.
 
 ## Gitleaks
 
-Historico completo (27 commits, 49 MB, incluindo `node_modules` antigo): nenhum segredo encontrado. Sem allowlist.
+Historico completo de todas as branches: nenhum segredo real.
+
+| Achado | Onde | Classificacao | Acao tomada | Resultado |
+|--------|------|---------------|-------------|-----------|
+| generic-api-key | `teste-segredo.txt:1`, commit `f2da1be`, branch `teste/segredo-ficticio` | Falso positivo | Chave ficticia criada para testar o gate. Como o checkout traz todas as branches, ela passou a bloquear a `main` (execucao #5). Registrada no `.gitleaksignore` pelo fingerprint exato | Execucao seguinte sem achados |
 
 ## Semgrep
 
