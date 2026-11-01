@@ -448,19 +448,22 @@ jobs:
           R7: ${{ needs.dast-staging.result }}
           R8: ${{ needs.deploy-prod.result }}
         run: |
-          count() { [ -f "$1" ] && jq -r "$2" "$1" 2>/dev/null || echo "-"; }
+          count() {
+            f=$(find r -name "$1" -not -path "*/full/*" | head -1)
+            [ -n "$f" ] && jq -r "$2" "$f" 2>/dev/null || echo "-"
+          }
 
-          A1="$(count r/relatorio-01-gitleaks/gitleaks.json 'length') segredos"
-          A2="$(count r/relatorio-02-semgrep/semgrep.json '.results | length') achados"
-          A3a=$(count r/relatorio-03-build/npm-audit.json '.metadata.vulnerabilities.total')
-          A3b=$(count r/relatorio-03-build/npm-audit-hub.json '.metadata.vulnerabilities.total')
+          A1="$(count gitleaks.json 'length') segredos"
+          A2="$(count semgrep.json '.results | length') achados"
+          A3a=$(count npm-audit.json '.metadata.vulnerabilities.total')
+          A3b=$(count npm-audit-hub.json '.metadata.vulnerabilities.total')
           A3="${A3a} + ${A3b} vulns (npm audit)"
           TQ='[.Results[]? | (.Vulnerabilities // [])[], (.Misconfigurations // [])[], (.Secrets // [])[]] | length'
-          A4="$(count r/relatorio-04-trivy-sca/trivy-fs.json "$TQ") HIGH/CRITICAL"
-          A6="$(count r/relatorio-06-trivy-image/trivy-image.json "$TQ") HIGH/CRITICAL"
+          A4="$(count trivy-fs.json "$TQ") HIGH/CRITICAL"
+          A6="$(count trivy-image.json "$TQ") HIGH/CRITICAL"
           ZQ='[.site[]?.alerts[]? | select(.riskcode == "3")] | length'
           ZM='[.site[]?.alerts[]? | select(.riskcode == "2")] | length'
-          ZF=r/relatorio-07-homologacao-zap/report_json.json
+          ZF=report_json.json
           A7="$(count "$ZF" "$ZQ") alertas High, $(count "$ZF" "$ZM") Medium"
 
           {
