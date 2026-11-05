@@ -6,12 +6,13 @@ Plataforma gamificada de treino em ciberseguranca. Tem uma landing page e o Hub,
 
 ## Integrantes
 
-| Nome             | RM     |
-| ---------------- | ------ |
-| Raul Azzi Corsi  | 565112 |
-| Lucas Cardoso    | 562689 |
-| Vitor Yoshida    | 562026 |
-| Fabricio Freitas | 564782 |
+| Nome                 | RM     |
+| -------------------- | ------ |
+| Raul Azzi Corsi      | 565112 |
+| Lucas Cardoso        | 562689 |
+| Vitor Yoshida        | 562026 |
+| Fabricio Freitas     | 564782 |
+| Kauê Monteiro Santos | 563248 |
 
 ## Producao
 
@@ -74,9 +75,9 @@ O revisor consulta os relatorios das etapas 1 a 7 antes de aprovar.
 
 ![Aprovacao](docs/evidencias/aprovacao-producao.png)
 
-| Execucao  | Aprovado por | Data      | Base da decisao                                                       |
-| --------- | ------------ | --------- | --------------------------------------------------------------------- |
-| [#3](https://github.com/raulacor/challenge-fiap-2026-SecDen/actions/runs/41326050353) | raulacor | 01/11/2026 | 0 segredos, 0 achados Semgrep, 0 HIGH/CRITICAL nas etapas 4 e 6, 0 alertas High no ZAP |
+| Execucao                                                                              | Aprovado por | Data       | Base da decisao                                                                        |
+| ------------------------------------------------------------------------------------- | ------------ | ---------- | -------------------------------------------------------------------------------------- |
+| [#3](https://github.com/raulacor/challenge-fiap-2026-SecDen/actions/runs/41326050353) | raulacor     | 01/11/2026 | 0 segredos, 0 achados Semgrep, 0 HIGH/CRITICAL nas etapas 4 e 6, 0 alertas High no ZAP |
 
 ### Etapa 4 x Etapa 6
 
